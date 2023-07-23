@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TAB Bonus Back Blitz App
 // @namespace    http://your-namespace.com
-// @version      1.0
+// @version      1.1
 // @description  Fetches data from API and calculates bonus back blitz
 // @author       Your Name
 // @match        https://www.tab.co.nz/*/bonus-back-blitz
@@ -137,6 +137,7 @@ const renderRaceResult = (raceResultWithBetResults) => `
         (outcome) => `
         <div style="display:flex">
           <div>${outcome.runnerNumber}. ${outcome.name} (${outcome.price})</div>
+          <div style="color: grey">[${outcome.pricePool}]</div>
           <div style="color: pink">${outcome.hasWon ? '(WINNER)' : ''}</div>
           <div style="color: lightgreen">${outcome.betReturn ? `(WON: ${outcome.betReturn.toFixed(2)})` : ''}</div>
           <div style="color: yellow">${outcome.bonusReturn ? `(BB: ${outcome.bonusReturn.toFixed(2)})` : ''}</div>
@@ -232,6 +233,7 @@ const getRaceResults = async (raceIds) => {
           runnerNumber: outcome.runnerNumber,
           position: outcome.result.position,
           price: outcome.prices.find((price) => price.place === false && price.priceType === 'LP')?.decimal || 0,
+          pricePool: outcome.prices.find((price) => price.place === false && price.priceType === 'WIN_POOL')?.decimal || 0,
         };
       });
 
@@ -241,7 +243,13 @@ const getRaceResults = async (raceIds) => {
       } else if (a.price < b.price) {
         return -1;
       } else {
-        return 0;
+        if (a.pricePool > b.pricePool) {
+            return 1;
+        } else if (a.pricePool < b.pricePool) {
+            return -1;
+        } else {
+          return 0;
+        }
       }
     });
 
